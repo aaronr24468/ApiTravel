@@ -16,13 +16,20 @@ export const getToken = async(request, response) =>{
             const payload = {...user};
             delete payload[0].password; //quitamos la contra para no pasarla con el token
             const token = jwt.sign(payload, 'secret'); //creamos el token
-            const sendData = {token, username: payload[0].username, image: payload[0].image, status: 'S'} 
+            console.log(token)
+            response.cookie('token', token,{
+                httpOnly: true,
+                secure: true,
+                sameSite: "none",
+                partitioned: true
+            })
+            const sendData = {username: payload[0].username, image: payload[0].image, status: 'S'} 
             response.status(200).json(sendData) //lo mandamos como respuesta si todo sale bien para guardarlo en localhost
         }else{
-            response.status(401).json('Incorrect password')
+            response.status(401).json('Incorrect password');
         }
     } catch (e) {
-        console.error(e)
-        response.status(401).json('User not found')
+        console.error(e);
+        response.status(401).json('User not found');
     }
 }

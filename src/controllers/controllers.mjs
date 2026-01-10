@@ -36,11 +36,26 @@ export const getDataUser = async(request, response) =>{
             //console.log(user)
             const userInfo = {
                 image: user[0].image,
-                username: user[0].username
+                username: user[0].username,
+                rol: request.auth[0].rol
             }
             response.status(200).json(userInfo)
         }else if(data.show === "profile"){
 
+        }
+    } catch (e) {
+        console.error(e);
+        response.status(401).json('F')
+    }
+}
+
+export const verifyRol = (request, response) =>{
+    try {
+        const rol = request.auth[0].rol
+        if(rol === "Admin" || rol === "driver"){
+            response.status(200).json({driver: true})
+        }else{
+            response.status(200).json({driver: false})
         }
     } catch (e) {
         console.error(e);

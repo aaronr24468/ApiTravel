@@ -14,17 +14,17 @@ export const getToken = async(request, response) =>{
 
         if(result === true){ //si el result da true es que la contra es igual a la de la BD si no es porque se escribio mal
             const payload = {...user};
-            delete payload[0].password; //quitamos la contra para no pasarla con el token
+            delete payload[0].password, delete payload[0].name, delete payload[0].lastname, delete payload[0].age, delete payload[0].username, delete payload[0].image, delete payload[0].phone, delete payload[0].cars, delete payload[0].travels; //quitamos la contra para no pasarla con el token
             const token = jwt.sign(payload, 'secret'); //creamos el token
             console.log(token)
-            response.cookie('token', token,{
+            response.cookie('travelToken', token,{
                 httpOnly: true,
                 secure: true,
                 sameSite: "none",
                 partitioned: true
             })
             const sendData = {username: payload[0].username, image: payload[0].image, status: 'S'} 
-            response.status(200).json(sendData) //lo mandamos como respuesta si todo sale bien para guardarlo en localhost
+            response.status(200).json({login: true}) //lo mandamos como respuesta si todo sale bien para guardarlo en localhost
         }else{
             response.status(401).json('Incorrect password');
         }

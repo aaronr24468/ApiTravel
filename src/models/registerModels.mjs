@@ -8,12 +8,12 @@ export const registerU = async(data) =>{
     if(userCheck.length === 1){
         return('MATCH')
     }else{
-        const query = 'INSERT INTO users(name, lastname, age, username, password, image, phone) values(?,?,?,?,?,?,?)';
-        await connectionDB.query(query, [data.name, data.lastname, data.age, data.username, data.password, data.image, data.phone]);
+        const query = 'INSERT INTO users(name, lastname, age, username, password, image, phone, rol) values(?,?,?,?,?,?,?,?)';
+        await connectionDB.query(query, [data.name, data.lastname, data.age, data.username, data.password, data.image, data.phone, data.rol]);
         return('Success')
     }
-    
 }
+
 export const setImageUser = async(data) =>{
     const query = 'SELECT * FROM users WHERE username=?'
     const [user] = await connectionDB.query(query, [data.username]) 
@@ -31,4 +31,10 @@ export const setImageD = async(data) =>{
     const [driver] = await connectionDB.query(query, [data.username]);
     const querySet = 'UPDATE drivers SET image=? WHERE id=?';
     await connectionDB.query(querySet, [data.url, driver[0].id]) 
+}
+
+export const getIdUser = async(username) =>{
+    const query = `SELECT id FROM users WHERE username=?`;
+    const [id] = await connectionDB.query(query, [username])
+    return(id)
 }

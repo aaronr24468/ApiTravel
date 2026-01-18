@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { registerDriver, registerUser, setImage } from "../controllers/registerControllers.mjs";
-import { uploadUserPhoto } from "../methods/uploadUserPhoto.mjs";
+import { uploadUserPhoto } from "../middleware/uploadUserPhoto.mjs";
 
 
 export const router = Router();

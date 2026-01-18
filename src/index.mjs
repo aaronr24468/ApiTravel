@@ -46,5 +46,5 @@ app.use((err, request, response, next) =>{
 })
 
 server.listen(8080, () =>{
-    console.log(`Listening to the http://localhost:${port}`) 
+    console.log(`Listening to the http://localhost:${port}`)
 })

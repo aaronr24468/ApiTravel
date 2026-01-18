@@ -1,6 +1,6 @@
 
 import bcrypt from 'bcrypt';
-import cloudinary from '../methods/cloudinary.mjs';
+import cloudinary from '../middleware/cloudinary.mjs';
 import { getIdUser, registerU, setImageD, setImageUser } from '../models/registerModels.mjs';
 
 export const registerUser = async (request, response) => {
@@ -28,7 +28,7 @@ export const registerUser = async (request, response) => {
         console.error(e)
         response.status(401).json('F')
     }
-}
+}  
 
 export const setImage = async (request, response) => {
     try {

@@ -1,4 +1,5 @@
-import { saveCarInfo, uploadCarImage } from "../models/vehicle.models.mjs";
+import { getVehicleByIdAndUser, saveCarInfo, uploadCarImage } from "../models/vehicle.models.mjs";
+import cloudinary from "../middleware/cloudinary.mjs";
 
 export const registCarInfo = async (request, response) => {
     try {
@@ -11,13 +12,14 @@ export const registCarInfo = async (request, response) => {
             plates: request.body.plates,
             insured: request.body.insured,
             year: request.body.year,
-            seats: request.body.seats
+            seats: request.body.seats,
+            img_Vehicle: ''
         };
         const res = await saveCarInfo(dataCar);
         if (res.affectedRows === 0) {
             return response.status(400).json({ upload: false });
         }
-        return response.status(201).json({ vehicule_id: true, "vehicle_id": res.insertId });
+        return response.status(201).json({ vehicule_id: true, "vehicle_id": res[0].insertId });
 
     } catch (e) {
         console.error(e);
@@ -27,12 +29,19 @@ export const registCarInfo = async (request, response) => {
 
 export const uploadVehiclePhoto = async (request, response) => {
     try {
-
+        const data = {
+            vehicle_id: request.params.idCar,
+            url: ''
+        }
+        const vehicle = await getVehicleByIdAndUser(data.vehicle_id, request.auth[0].id);
+        //console.log(vehicle)
+        if(vehicle.length === 0){
+            return response.status(403).json({message: "Forbidden"})
+        }
         const url = await new Promise((resolve, reject) => {
             cloudinary.v2.uploader.upload_stream({
                 folder: '/Viajes/vehicles',
-                overwrite: true,
-                public_id: request.auth[0].id
+                public_id: `driver_${data.vehicle_id}_${Date.now()}`
             },
                 (err, result) => {
                     if (err) reject(err);
@@ -40,19 +49,16 @@ export const uploadVehiclePhoto = async (request, response) => {
                 }
             ).end(request.file.buffer)
         })
-        const data = {
-            vehicle_id: request.params.idCar,
-            url: url.secure_url
-        }
+        data.url = url.secure_url;
         const res = await uploadCarImage(data)
-
         if (res.affectedRows === 0) {
-            response.status(500).json({ upload: false })
+            return response.status(500).json({ upload: false })
         }
         response.status(200).json({ upload: true })
 
 
     } catch (e) {
-
+        console.error(e);
+        response.status(500).json({message: "Error de servidor"})
     }
 }

@@ -17,3 +17,9 @@ export const getVehicleByIdAndUser = async(vehicle_id, idUser) =>{
     const [vehicle] = await connectionDB.query(query, [vehicle_id, idUser])
     return(vehicle)
 }
+
+export const getListCars = async(idDriver) =>{
+    const query = 'SELECT * FROM vehicles WHERE driver_id=?';
+    const [cars] =  await connectionDB.query(query, [idDriver]);
+    return(cars)
+}

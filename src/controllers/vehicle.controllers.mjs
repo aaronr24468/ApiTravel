@@ -1,4 +1,4 @@
-import { getVehicleByIdAndUser, saveCarInfo, uploadCarImage } from "../models/vehicle.models.mjs";
+import { getListCars, getVehicleByIdAndUser, saveCarInfo, uploadCarImage } from "../models/vehicle.models.mjs";
 import cloudinary from "../middleware/cloudinary.mjs";
 
 export const registCarInfo = async (request, response) => {
@@ -57,6 +57,20 @@ export const uploadVehiclePhoto = async (request, response) => {
         response.status(200).json({ upload: true })
 
 
+    } catch (e) {
+        console.error(e);
+        response.status(500).json({message: "Error de servidor"})
+    }
+}
+
+export const listCars = async(request, response) =>{
+    try {
+        const idDriver = request.auth[0].id;
+        const cars = await getListCars(idDriver);
+        if(cars.length === 0){
+            return response.status(403).json({message: "No cars"})
+        }
+        response.status(200).json(cars)
     } catch (e) {
         console.error(e);
         response.status(500).json({message: "Error de servidor"})

@@ -80,8 +80,8 @@ export const registerDriver = async (request, response) => {
             username: request.body.username,
             password: request.body.password,
             image: '',
-            driver: 'true',
-            cars: ''
+            phone: request.body.phone,
+            rol: 'driver'
         }
         const hashP = await bcrypt.hash(data.password, saltRounds);
         data.password = hashP;

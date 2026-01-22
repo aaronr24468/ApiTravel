@@ -4,7 +4,7 @@ import { connectionDB } from '../connectionDB/connection.mjs';
 export const registerU = async(data) =>{
     const queryCheckUser = 'SELECT * FROM users WHERE username=?';
     const [userCheck] = await connectionDB.query(queryCheckUser, [data.username]);
-    console.log(userCheck)
+    //console.log(userCheck)
     if(userCheck.length === 1){
         return('MATCH')
     }else{
@@ -22,7 +22,7 @@ export const setImageUser = async(data) =>{
 }
 
 export const registerD = async(data) =>{
-    const query = 'INSERT INTO drivers(name, lastname, age, username, password, image, driver, cars) values(?,?,?,?,?,?,?,?)';
+    const query = 'INSERT INTO users(name, lastname, age, username, password, image, driver, cars) values(?,?,?,?,?,?,?,?)';
     await connectionDB.query(query, [data.name, data.lastname, data.age, data.username, data.password, data.image, data.driver, data.cars])
 }
 

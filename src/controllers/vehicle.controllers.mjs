@@ -1,11 +1,11 @@
 import { getListCars, getVehicleByIdAndUser, saveCarInfo, uploadCarImage } from "../models/vehicle.models.mjs";
-import cloudinary from "../middleware/cloudinary.mjs";
+import cloudinary from "../utils/cloudinary.mjs";
+import { AppError } from "../utils/AppError.mjs";
 
-export const registCarInfo = async (request, response) => {
+export const registCarInfo = async (request, response, next) => {
     try {
-
         const dataCar = {
-            driver_id: request.auth[0].id,
+            driver_id: request.auth.id,
             brand: request.body.brand,
             model: request.body.model,
             color: request.body.color,
@@ -13,31 +13,44 @@ export const registCarInfo = async (request, response) => {
             insured: request.body.insured,
             year: request.body.year,
             seats: request.body.seats,
-            img_Vehicle: ''
         };
+        console.log(dataCar)
+
+        if(
+            !dataCar.brand ||
+            !dataCar.model ||
+            !dataCar.color ||
+            !dataCar.plates ||
+            !dataCar.insured ||
+            !dataCar.year ||
+            !dataCar.seats
+        ){
+            throw new AppError("Faltan datos", 400)
+        }
+
         const res = await saveCarInfo(dataCar);
+        
         if (res.affectedRows === 0) {
             return response.status(400).json({ upload: false });
         }
-        return response.status(201).json({ vehicule_id: true, "vehicle_id": res[0].insertId });
+        return response.json({ ok: true, "message": res[0].insertId });
 
-    } catch (e) {
-        console.error(e);
-        response.status(401).json('F')
+    } catch (error) {
+        next(error)
     }
 }
 
-export const uploadVehiclePhoto = async (request, response) => {
+export const uploadVehiclePhoto = async (request, response, next) => {
     try {
         const data = {
             vehicle_id: request.params.idCar,
             url: ''
         }
-        const vehicle = await getVehicleByIdAndUser(data.vehicle_id, request.auth[0].id);
+        const vehicle = await getVehicleByIdAndUser(data.vehicle_id, request.auth.id);
         //console.log(vehicle)
-        if(vehicle.length === 0){
-            return response.status(403).json({message: "Forbidden"})
-        }
+
+        if(!vehicle.length) throw new AppError("Car not found", 400);
+
         const url = await new Promise((resolve, reject) => {
             cloudinary.v2.uploader.upload_stream({
                 folder: '/Viajes/vehicles',
@@ -49,30 +62,31 @@ export const uploadVehiclePhoto = async (request, response) => {
                 }
             ).end(request.file.buffer)
         })
+
+        if(!url.secure_url.length) throw new AppError('Error al subir imagen', 500)
+
         data.url = url.secure_url;
+
         const res = await uploadCarImage(data)
+
         if (res.affectedRows === 0) {
-            return response.status(500).json({ upload: false })
+            throw new AppError('Error de mysql', 500)
         }
-        response.status(200).json({ upload: true })
+        response.json({ok: true, message: true })
 
 
-    } catch (e) {
-        console.error(e);
-        response.status(500).json({message: "Error de servidor"})
+    } catch (error) {
+        next(error)
     }
 }
 
-export const listCars = async(request, response) =>{
+export const listCars = async(request, response, next) =>{
     try {
-        const idDriver = request.auth[0].id;
+        const idDriver = request.auth.id;
         const cars = await getListCars(idDriver);
-        if(cars.length === 0){
-            return response.status(403).json({message: "No cars"})
-        }
-        response.status(200).json(cars)
-    } catch (e) {
-        console.error(e);
-        response.status(500).json({message: "Error de servidor"})
+        if(!cars.length)throw new AppError("Cars not found", 403);
+        response.json({ok: true, message: cars})
+    } catch (error) {
+        next(error)
     }
 }

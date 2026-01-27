@@ -9,16 +9,23 @@ export const registerU = async(data) =>{
         return('MATCH')
     }else{
         const query = 'INSERT INTO users(name, lastname, age, username, password, image, phone, rol) values(?,?,?,?,?,?,?,?)';
-        await connectionDB.query(query, [data.name, data.lastname, data.age, data.username, data.password, data.image, data.phone, data.rol]);
-        return('Success')
+        const res = await connectionDB.query(query, [data.name, data.lastname, data.age, data.username, data.password, data.image, data.phone, data.rol]);
+        return(res)
     }
 }
 
+export const getUserId = async(username) =>{
+    const query = 'SELECT id from users WHERE username=?';
+    const [user] = await connectionDB.query(query, [username])
+    return(user[0].id)
+}
+
 export const setImageUser = async(data) =>{
-    const query = 'SELECT * FROM users WHERE username=?'
-    const [user] = await connectionDB.query(query, [data.username]) 
+    const query = 'SELECT * FROM users WHERE id=?'
+    const [user] = await connectionDB.query(query, [data.id]) 
     const querySet = 'UPDATE users SET image=? WHERE id=?';
-    await connectionDB.query(querySet, [data.url, user[0].id])
+    const [res] = await connectionDB.query(querySet, [data.url, user[0].id])
+    return(res)
 }
 
 export const registerD = async(data) =>{

@@ -1,13 +1,14 @@
 import { getDataF } from "../models/driver.models.mjs";
+import { AppError } from "../utils/AppError.mjs";
 
 
 export const getDataForm = async(request, response) =>{
     try {
-        const id = request.auth[0].id;
+        const id = request.auth.id;
         const data = await getDataF(id);
-        response.status(200).json(data[0]);
-    } catch (e) {
-        console.error(e);
-        response.status(500).json({message: "Error de servidor"})
+        const info = data[0]
+        response.json({ok: true, message: info});
+    } catch (error) {
+        next(error)
     }
 }

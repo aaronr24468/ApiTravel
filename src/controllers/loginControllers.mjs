@@ -1,35 +1,51 @@
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken';
 import { getUser } from '../models/loginModels.mjs';
+import { AppError } from '../utils/AppError.mjs';
 
-export const getToken = async(request, response) =>{
+export const getToken = async(request, response, next) =>{
     try {
-        const data = {
-            username: request.body.username,
-            password: request.body.password
+        const {username, password} = request.body;
+        
+        if(!username || !password){
+            throw new AppError("Username y password requeridos")
         }
-        const user = await getUser(data); //optenemos el usuario
 
-        const result = await bcrypt.compare(data.password, user[0].password) //comparamos la contra del usuario con la del hash que se tiene en la BD
-
-        if(result === true){ //si el result da true es que la contra es igual a la de la BD si no es porque se escribio mal
-            const payload = {...user};
-            delete payload[0].password, delete payload[0].name, delete payload[0].lastname, delete payload[0].age, delete payload[0].username, delete payload[0].image, delete payload[0].phone, delete payload[0].cars, delete payload[0].travels; //quitamos la contra para no pasarla con el token
-            const token = jwt.sign(payload, 'secret'); //creamos el token
-            console.log(token)
-            response.cookie('travelToken', token,{
-                httpOnly: true,
-                secure: true,
-                sameSite: "none",
-                partitioned: true
-            })
-            const sendData = {username: payload[0].username, image: payload[0].image, status: 'S'} 
-            response.status(200).json({login: true}) //lo mandamos como respuesta si todo sale bien para guardarlo en localhost
-        }else{
-            response.status(401).json('Incorrect password');
+        const users = await getUser(username); //optenemos el usuario
+    
+        if(!users.length){
+            throw new AppError('Credenciales invalidas', 401)
         }
-    } catch (e) {
-        console.error(e);
-        response.status(401).json('User not found');
+
+        const user = users[0]
+
+        const result = await bcrypt.compare(password, user.password) //comparamos la contra del usuario con la del hash que se tiene en la BD
+
+        if(!result){ //si el result da true es que la contra es igual a la de la BD si no es porque se escribio mal
+            throw new AppError('Credenciales invalidas', 401)
+        }
+
+        const payload = {
+            id: user.id,
+            rol: user.rol
+        }
+
+        
+        const token = jwt.sign(payload, 'secret',{
+            expiresIn: "1d"
+        })
+
+
+        response.cookie('travelToken', token,{
+            httpOnly: true,
+            secure: true,
+            sameSite: "none",
+            partitioned: true
+        })
+
+        response.json({ok: true, message: "Login exitoso"})
+
+    } catch (error) {
+        next(error)
     }
 }

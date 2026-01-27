@@ -1,35 +1,34 @@
+import { AppError } from "../utils/AppError.mjs";
 
-export const logOut = (request, response) => {
+export const logOut = (request, response, next) => {
     try {
         response.clearCookie('travelToken', {
             secure: true,
             sameSite: "none",
             partitioned: true
         });
-        response.status(200).json({ logout: true });
-    } catch (e) {
-        response.status(401).json({ logout: false })
+        response.json({ok: true,  logout: true });
+    } catch (error) {
+        next(error)
     }
 }
 
-export const checkAccount = async (request, response) => {
+export const checkAccount = async (request, response, next) => {
     try {
         const token = request.cookies.travelToken;
         //console.log(data)
-        response.status(200).json({ login: true })
-    } catch (e) {
-        console.error(e);
-        response.status(401).json('F')
+        response.json({ok: true, login: true })
+    } catch (error) {
+        next(error)
     }
 } 
 
 
 
-export const verifyU = (request, response) => {
+export const verifyU = (request, response, next) => {
     try {
         response.status(200).json({ driver: true })
-    } catch (e) {
-        console.error(e);
-        response.status(401).json('F')
+    } catch (error) {
+        next(error)
     }
 }

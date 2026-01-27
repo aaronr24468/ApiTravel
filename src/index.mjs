@@ -6,6 +6,7 @@ import { fileURLToPath } from "url";
 import { router as registerRouter } from "./routes/registerRoute.mjs";
 import { router as loginRouter } from "./routes/loginRoute.mjs";
 import { router as infoRouter } from "./routes/routes.mjs";
+import { errorHandler } from "./middleware/errorHandler.mjs";
 import morgan from "morgan";
 import { expressjwt } from "express-jwt";
 import cookieParser from "cookie-parser";
@@ -33,9 +34,7 @@ app.use('/login', loginRouter);
 
 app.use('/v1/travel',expressjwt({secret: 'secret', algorithms: ['HS256'], getToken: (req) => req.cookies.travelToken}), infoRouter)
 
-// app.get('/', (request, response) =>{
-//     response.redirect('/v1/travel')
-// });
+app.use(errorHandler)
 
 app.use((err, request, response, next) =>{
     if(err.name === "UnauthorizedError"){
@@ -44,6 +43,8 @@ app.use((err, request, response, next) =>{
         next();
     }
 })
+
+
 
 server.listen(8080, () =>{
     console.log(`Listening to the http://localhost:${port}`)

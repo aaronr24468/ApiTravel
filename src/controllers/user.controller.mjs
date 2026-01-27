@@ -1,37 +1,38 @@
 import { getInfo } from "../models/user.models.mjs";
+import { AppError } from "../utils/AppError.mjs";
 
-export const getDataUser = async (request, response) => {
+export const getDataUser = async (request, response, next) => {
     try {
         const data = {
             show: request.params.data,
-            id: request.auth[0].id
+            id: request.auth.id
         }
 
         if (data.show === "navBar") {
-            const user = await getInfo(data);
-            //console.log(user)
+            const users = await getInfo(data);
+
+            if(!users.length) throw new AppError('Credenciales no validas', 401)
+
             const userInfo = {
-                image: user[0].image,
-                username: user[0].username,
-                rol: request.auth[0].rol
+                image: users[0].image,
+                username: users[0].username,
+                rol: request.auth.rol
             }
-            response.status(200).json(userInfo)
+            response.json({ok: true, message: userInfo})
         } else if (data.show === "profile") {
 
         }
-    } catch (e) {
-        console.error(e);
-        response.status(401).json('F')
+    } catch (error) {
+        next(error)
     }
 }
 
-export const checkAccount = async (request, response) => {
+export const checkAccount = async (request, response, next) => {
     try {
         const token = request.cookies.travelToken;
-        //console.log(data)
-        response.status(200).json({ login: true })
-    } catch (e) {
-        console.error(e);
-        response.status(401).json('F')
+        if(!token) throw new AppError('No tienes permisos', 403)
+        response.json({ ok: true })
+    } catch (error) {
+        next(error)
     }
 }

@@ -1,11 +1,13 @@
 
 import bcrypt from 'bcrypt';
-import cloudinary from '../middleware/cloudinary.mjs';
-import { getIdUser, registerU, setImageD, setImageUser } from '../models/registerModels.mjs';
+import cloudinary from '../utils/cloudinary.mjs';
+import { getIdUser, getUserId, registerU, setImageD, setImageUser } from '../models/registerModels.mjs';
+import { AppError } from '../utils/AppError.mjs';
 
-export const registerUser = async (request, response) => {
+export const registerUser = async (request, response, next) => {
     try {
         const saltRounds = 10;
+        
         const data = {
             name: request.body.name,
             lastname: request.body.lastname,
@@ -16,30 +18,43 @@ export const registerUser = async (request, response) => {
             phone: request.body.phone,
             rol: 'user'
         }
-        const hashP = await bcrypt.hash(data.password, saltRounds);
-        data.password = hashP;
-        const res = await registerU(data);
-        if (res === "MATCH") {
-            response.status(200).json('M')
-        } else {
-            response.status(200).json('S')
+
+        if(
+            !data.name ||
+            !data.lastname ||
+            !data.age ||
+            !data.username ||
+            !data.password ||
+            !data.phone
+        ){
+            throw new AppError("Falta informacion", 400)
         }
-    } catch (e) {
-        console.error(e)
-        response.status(401).json('F')
+
+        const hashP = await bcrypt.hash(data.password, saltRounds);
+
+        data.password = hashP;
+
+        const res = await registerU(data);
+        const id = res[0].insertId;
+
+        if (res === "MATCH") {
+            throw new AppError("User already exist", 409)
+        } else {
+            console.log("entro")
+            response.json({ok: true, message: "Se registro con exito", id: id})
+        }
+    } catch (error) {
+        next(error)
     }
 }  
 
-export const setImage = async (request, response) => {
+export const setImage = async (request, response, next) => {
     try {
-        const username = request.params.username;
-        const id = await getIdUser(username)
-        if(!id[0].id || id[0].id.length === 0){
-            response.status(400).json({message: "User not found"})
-        }
+        const id = request.params.id;
+        console.log(id)
 
         if(!request.file){
-            response.status(400).json({message: 'No se envio ninguna imagen'})
+            throw new AppError("No se envio ninguna imagen", 403)
         }
 
         const result = await new Promise((resolve, reject) =>{
@@ -47,7 +62,7 @@ export const setImage = async (request, response) => {
                 {
                     folder: 'Viajes/users',
                     overwrite: true,
-                    public_id: `user_${id[0].id}`
+                    public_id: `user_${id}`
                 },
                 (err, result) =>{
                     if(err) reject(err);
@@ -55,22 +70,29 @@ export const setImage = async (request, response) => {
                 }
             ).end(request.file.buffer)
         })
+
         const data = {
-            username: request.params.username,
+            id: id,
             url: result.secure_url
         };
 
-        await setImageUser(data)
-        response.status(200).json('S')
+        const res = await setImageUser(data)
 
-    } catch (e) {
-        console.error(e)
-        response.status(401).json('F')
+        if(res.affectedRows === 0 ) throw new AppError("Error de servidor", 403)
+
+        response.json({ok: true, message:"Success"})
+
+    } catch (error) {
+        next(error)
     }
 }
 
 
-export const registerDriver = async (request, response) => {
+
+// falta agregar el registro del conductor////////////////////////////////////////////////////////////////////////
+
+
+export const registerDriver = async (request, response, next) => {
     try {
         const saltRounds = 10;
         const data = {
@@ -93,7 +115,7 @@ export const registerDriver = async (request, response) => {
     }
 }
 
-export const setImageDriver = async (request, response) => {
+export const setImageDriver = async (request, response, next) => {
     try {
         const data = {
             username: request.params.username,

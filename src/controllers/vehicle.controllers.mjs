@@ -14,6 +14,7 @@ export const registCarInfo = async (request, response, next) => {
             year: request.body.year,
             seats: request.body.seats,
         };
+        
         console.log(dataCar)
 
         if(
@@ -31,7 +32,7 @@ export const registCarInfo = async (request, response, next) => {
         const res = await saveCarInfo(dataCar);
         
         if (res.affectedRows === 0) {
-            return response.status(400).json({ upload: false });
+            throw new AppError("Error al guardar la informacion", 403);
         }
         return response.json({ ok: true, "message": res[0].insertId });
 
@@ -85,7 +86,7 @@ export const listCars = async(request, response, next) =>{
         const idDriver = request.auth.id;
         const cars = await getListCars(idDriver);
         if(!cars.length)throw new AppError("Cars not found", 403);
-        response.json({ok: true, message: cars})
+        response.json({ok: true, message: "Success", cars})
     } catch (error) {
         next(error)
     }

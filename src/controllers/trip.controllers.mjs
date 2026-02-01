@@ -1,5 +1,5 @@
 import cloudinary from "../utils/cloudinary.mjs";
-import { cityImage, getCityI, getDataT, getImageUserT, getList, setImageTrip, setTripDriver } from "../models/trip.models.mjs";
+import { cityImage, getCityI, getDataT, getList, setTripDriver } from "../models/trip.models.mjs";
 import { AppError } from "../utils/AppError.mjs";
 
 export const setTrip = async (request, response, next) => {
@@ -14,12 +14,14 @@ export const setTrip = async (request, response, next) => {
             price: request.body.price,
             status: true,
             starting_point: request.body.starting_point,
-            image_origin: request.body.image_origin,
-            image_destination: request.body.image_destination,
+            destination_point: request.body.destination_point,
+            arrived_point: request.body.arrived_point,
+            departure_time: request.body.departure_time,
+            arrived_time: request.body.arrived_time,
             image_city: request.body.city_image
         }
-    
-
+     
+        
         if(
             !dataTrip.vehicule_id ||
             !dataTrip.origin_city ||
@@ -28,17 +30,19 @@ export const setTrip = async (request, response, next) => {
             !dataTrip.available_seats == null ||
             !dataTrip.price ||
             !dataTrip.starting_point ||
-            !dataTrip.image_destination ||
-            !dataTrip.image_origin ||
+            !dataTrip.destination_point ||
+            !dataTrip.arrived_point ||
+            !dataTrip.departure_time ||
+            !dataTrip.arrived_time||
             !dataTrip.image_city
         ){
             throw new AppError('Faltan datos', 400)
         }
-
+      
         const res = await setTripDriver(dataTrip)
-
+        
         if (res.affectedRows === 0) {
-            throw new AppError("Error de mysql", 403)
+            throw new AppError("Error de al registrar viaje", 403)
         }
 
         response.json({ok: true, message: "Success", id_trip: res.insertId})
@@ -47,43 +51,6 @@ export const setTrip = async (request, response, next) => {
     }
 }
 
-export const uploadTripImages = async (request, response, next) => {
-    try {
-        const url = await new Promise((resolve, reject) => {
-            cloudinary.v2.uploader.upload_stream({
-                folder: '/Viajes/trips',
-                overwrite: true,
-                public_id: `trip_${request.auth.id}_${Date.now()}`
-            },
-                (err, result) => {
-                    if (err) reject(err);
-                    else resolve(result)
-                }
-            ).end(request.file.buffer)
-        })
-        const result = await setImageTrip({url: url.secure_url, id_user: request.auth.id, city: request.params.city});
-        
-        if(result.affectedRows === 0) throw new AppError("Error mysql");
-
-        response.json({ok: true, message: 'Success'})
-    } catch (error) {
-        next(error)
-    }
-}
-
-export const getImageUserTrips = async(request, response, next) =>{
-    try {
-        const user_id =  request.auth.id;
-
-        const listImg = await getImageUserT(user_id);
-
-        if(listImg.length === 0 ) throw new AppError("Not images", 403)
-        
-        response.json({ok: true, message: "Success", listImg})
-    } catch (error) {
-        next(error)
-    }
-}
 
 export const getListTravel = async(request, response, next) =>{
     try {
@@ -169,15 +136,13 @@ export const getDataTrip = async(req, res, next) =>{
         if(!id) throw new AppError('No seleccionaste nada', 403);
 
         const trip = await getDataT(id)
-
-        const timeArr = trip[0].departure_date.split('T');
-        const splitD = timeArr[0].split('-')
+       
+        const splitD = trip[0].departure_date.split('-');
 
         const date = {
             day: splitD[2],
             month: splitD[1],
             year: splitD[0],
-            hour: timeArr[1]
         }
 
         delete trip[0].departure_date

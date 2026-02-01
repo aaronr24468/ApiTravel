@@ -27,7 +27,7 @@ export const checkAccount = async (request, response, next) => {
 
 export const verifyU = (request, response, next) => {
     try {
-        response.status(200).json({ driver: true })
+        response.json({ driver: true })
     } catch (error) {
         next(error)
     }

@@ -16,7 +16,9 @@ export const registerUser = async (request, response, next) => {
             password: request.body.password,
             image: '',
             phone: request.body.phone,
-            rol: 'user'
+            rol: 'user',
+            stripe_account_id: "",
+            stripe_onboarded: false
         }
 
         if(
@@ -40,7 +42,6 @@ export const registerUser = async (request, response, next) => {
         if (res === "MATCH") {
             throw new AppError("User already exist", 409)
         } else {
-            console.log("entro")
             response.json({ok: true, message: "Se registro con exito", id: id})
         }
     } catch (error) {
@@ -51,7 +52,6 @@ export const registerUser = async (request, response, next) => {
 export const setImage = async (request, response, next) => {
     try {
         const id = request.params.id;
-        console.log(id)
 
         if(!request.file){
             throw new AppError("No se envio ninguna imagen", 403)

@@ -1,15 +1,13 @@
-import mysql from 'mysql2/promise';
 import { connectionDB } from '../connectionDB/connection.mjs';
 
 export const registerU = async(data) =>{
     const queryCheckUser = 'SELECT * FROM users WHERE username=?';
     const [userCheck] = await connectionDB.query(queryCheckUser, [data.username]);
-    //console.log(userCheck)
     if(userCheck.length === 1){
         return('MATCH')
     }else{
-        const query = 'INSERT INTO users(name, lastname, age, username, password, image, phone, rol) values(?,?,?,?,?,?,?,?)';
-        const res = await connectionDB.query(query, [data.name, data.lastname, data.age, data.username, data.password, data.image, data.phone, data.rol]);
+        const query = 'INSERT INTO users(name, lastname, age, username, password, image, phone, rol, stripe_account_id, stripe_onboarded) values(?,?,?,?,?,?,?,?,?,?)';
+        const res = await connectionDB.query(query, [data.name, data.lastname, data.age, data.username, data.password, data.image, data.phone, data.rol, data.stripe_account_id, data.stripe_onboarded]);
         return(res)
     }
 }

@@ -6,6 +6,7 @@ import { fileURLToPath } from "url";
 import { router as registerRouter } from "./routes/registerRoute.mjs";
 import { router as loginRouter } from "./routes/loginRoute.mjs";
 import { router as infoRouter } from "./routes/routes.mjs";
+import { router as stripeRoute } from "./routes/stripeRoute.mjs";
 import { errorHandler } from "./middleware/errorHandler.mjs";
 import morgan from "morgan";
 import { expressjwt } from "express-jwt";
@@ -25,9 +26,15 @@ app.use(cors({
 
 app.use(morgan('dev'))
 app.use(cookieParser());
-app.use(express.json());
+
 app.use(express.urlencoded({extended: false}));
 app.use(express.static(join(dirname(fileURLToPath(import.meta.url)), '/images')));
+
+app.use('/api/stripe/webhook', express.raw({type: "application/json"}),stripeRoute) /*este muddleware es especifico
+ solo para obtener la respuesta de stripe por webhook, para permitir webhook se necesita express.raw, este no es compatible con express.json()
+ por eso lo ponemos detras de el, las demas rutas siguen igual*/
+
+app.use(express.json());
 
 app.use('/register', registerRouter);
 app.use('/login', loginRouter);

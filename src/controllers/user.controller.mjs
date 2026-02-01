@@ -18,6 +18,7 @@ export const getDataUser = async (request, response, next) => {
                 username: users[0].username,
                 rol: request.auth.rol
             }
+            
             response.json({ok: true, message: userInfo})
         } else if (data.show === "profile") {
 

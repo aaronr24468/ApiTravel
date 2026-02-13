@@ -17,12 +17,13 @@ export const registCarInfo = async (request, response, next) => {
         
         console.log(dataCar)
 
+        if(!dataCar.insured) throw new AppError('Necesitas aceptar parametro de seguro', 403);
+
         if(
             !dataCar.brand ||
             !dataCar.model ||
             !dataCar.color ||
             !dataCar.plates ||
-            !dataCar.insured ||
             !dataCar.year ||
             !dataCar.seats
         ){
@@ -34,7 +35,7 @@ export const registCarInfo = async (request, response, next) => {
         if (res.affectedRows === 0) {
             throw new AppError("Error al guardar la informacion", 403);
         }
-        return response.json({ ok: true, "message": res[0].insertId });
+        return response.json({ ok: true, message:"Se subio con exito", id: res[0].insertId });
 
     } catch (error) {
         next(error)

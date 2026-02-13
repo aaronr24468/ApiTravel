@@ -101,30 +101,78 @@ export const registerDriver = async (request, response, next) => {
             age: request.body.age,
             username: request.body.username,
             password: request.body.password,
+            passwordC: request.body.passwordC,
             image: '',
             phone: request.body.phone,
-            rol: 'driver'
+            rol: 'driver',
+            stripe_account_id: "",
+            stripe_onboarded: false,
+            email: request.body.email
         }
+
+        if(data.password !== data.passwordC) throw new AppError('Contraseña no coincide', 400)
+
         const hashP = await bcrypt.hash(data.password, saltRounds);
         data.password = hashP;
-        await registerU(data);
-        response.status(200).json('S')
+
+        if(
+            !data.name ||
+            !data.lastname ||
+            !data.age ||
+            !data.username ||
+            !data.password ||
+            !data.phone
+        ){
+            throw new AppError("Falta informacion", 400)
+        }
+        
+        const image = request.body.image;
+
+        console.log(image)
+
+        if(!image) throw new AppError('Necesitas seleccionar una imagen de ti', 403)
+
+
+        const res = await registerU(data);
+
+        if (res === "MATCH") throw new AppError("User already exist", 400);
+
+        const id = res[0].insertId;
+
+        response.json({ok: true, message: "Registro exitoso", idD: id})
     } catch (e) {
-        console.error(e)
-        response.status(401).json('F')
+        next(e)
     }
 }
 
 export const setImageDriver = async (request, response, next) => {
     try {
+        const id = request.params.id;
+
+        const result = await new Promise((resolve, reject) =>{
+            cloudinary.v2.uploader.upload_stream({
+                folder: 'Viajes/users',
+                overwrite: true,
+                public_id: `driver_${id}`
+            },
+            (err, result)=>{
+                if(err) reject(err);
+                else resolve(result)
+            }).end(request.file.buffer)
+        })
+
         const data = {
-            username: request.params.username,
-            url: `http://localhost:8080/driversPhotos/${request.file.filename}`
+            id: id,
+            url: result.secure_url
         };
-        await setImageD(data);
-        response.status(200).json('S')
+
+        const res = await setImageUser(data)
+
+        if(res.affectedRows === 0 ) throw new AppError("Error de servidor", 403)
+
+        response.json({ok: true, message:"Success"})
+
     } catch (e) {
-        console.error(e);
-        response.status(401).json('F')
+        next(e)
     }
 }

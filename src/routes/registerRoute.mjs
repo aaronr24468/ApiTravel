@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { registerDriver, registerUser, setImage } from "../controllers/registerControllers.mjs";
+import { registerDriver, registerUser, setImage, setImageDriver } from "../controllers/registerControllers.mjs";
 import { uploadUserPhoto } from "../utils/uploadUserPhoto.mjs";
 
 
@@ -11,4 +11,4 @@ router.post('/setImage/:id',uploadUserPhoto.single('image'), setImage); //end po
 
 router.put('/registDriver', registerDriver); //end point para registrar a los conductores
 
-//router.post('/registDriver/setDriverImage/:username', getDriverImage)
+router.post('/registDriver/setDriverImage/:id', uploadUserPhoto.single('image'), setImageDriver)

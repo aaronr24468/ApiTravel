@@ -1,6 +1,7 @@
 import cloudinary from "../utils/cloudinary.mjs";
 import { cityImage, getCityI, getDataT, getList, setTripDriver } from "../models/trip.models.mjs";
 import { AppError } from "../utils/AppError.mjs";
+import { getOnBoardStripe } from "../models/user.models.mjs";
 
 export const setTrip = async (request, response, next) => {
     try {
@@ -20,8 +21,14 @@ export const setTrip = async (request, response, next) => {
             arrived_time: request.body.arrived_time,
             image_city: request.body.city_image
         }
-     
-        
+
+
+        const idDriver = request.auth.id;
+
+        const getStripeOnBoard = await getOnBoardStripe(idDriver);
+
+        if(getStripeOnBoard.stripe_onboarded === 0) throw new AppError("Stripe Configuration", 401)
+
         if(
             !dataTrip.vehicule_id ||
             !dataTrip.origin_city ||
@@ -38,6 +45,8 @@ export const setTrip = async (request, response, next) => {
         ){
             throw new AppError('Faltan datos', 400)
         }
+
+        
       
         const res = await setTripDriver(dataTrip)
         

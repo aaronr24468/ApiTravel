@@ -1,45 +1,56 @@
 import { connectionDB } from '../connectionDB/connection.mjs';
 
-export const registerU = async(data) =>{
+export const registerU = async (data) => {
     const queryCheckUser = 'SELECT * FROM users WHERE username=?';
     const [userCheck] = await connectionDB.query(queryCheckUser, [data.username]);
-    if(userCheck.length === 1){
-        return('MATCH')
-    }else{
-        const query = 'INSERT INTO users(name, lastname, age, username, password, image, phone, rol, stripe_account_id, stripe_onboarded) values(?,?,?,?,?,?,?,?,?,?)';
-        const res = await connectionDB.query(query, [data.name, data.lastname, data.age, data.username, data.password, data.image, data.phone, data.rol, data.stripe_account_id, data.stripe_onboarded]);
-        return(res)
+    if (userCheck.length === 1) {
+        return ('MATCH')
+    } else {
+        const query = 'INSERT INTO users(name, lastname, age, username, password, image, phone, rol, stripe_account_id, stripe_onboarded, email) values(?,?,?,?,?,?,?,?,?,?,?)';
+        const res = await connectionDB.query(query, [
+            data.name,
+            data.lastname,
+            data.age,
+            data.username,
+            data.password,
+            data.image,
+            data.phone,
+            data.rol,
+            data.stripe_account_id,
+            data.stripe_onboarded,
+            data.email]);
+        return (res)
     }
 }
 
-export const getUserId = async(username) =>{
+export const getUserId = async (username) => {
     const query = 'SELECT id from users WHERE username=?';
     const [user] = await connectionDB.query(query, [username])
-    return(user[0].id)
+    return (user[0].id)
 }
 
-export const setImageUser = async(data) =>{
+export const setImageUser = async (data) => {
     const query = 'SELECT * FROM users WHERE id=?'
-    const [user] = await connectionDB.query(query, [data.id]) 
+    const [user] = await connectionDB.query(query, [data.id])
     const querySet = 'UPDATE users SET image=? WHERE id=?';
     const [res] = await connectionDB.query(querySet, [data.url, user[0].id])
-    return(res)
+    return (res)
 }
 
-export const registerD = async(data) =>{
+export const registerD = async (data) => {
     const query = 'INSERT INTO users(name, lastname, age, username, password, image, driver, cars) values(?,?,?,?,?,?,?,?)';
     await connectionDB.query(query, [data.name, data.lastname, data.age, data.username, data.password, data.image, data.driver, data.cars])
 }
 
-export const setImageD = async(data) =>{
+export const setImageD = async (data) => {
     const query = 'SELECT * FROM drivers WHERE username=?'
     const [driver] = await connectionDB.query(query, [data.username]);
     const querySet = 'UPDATE drivers SET image=? WHERE id=?';
-    await connectionDB.query(querySet, [data.url, driver[0].id]) 
+    await connectionDB.query(querySet, [data.url, driver[0].id])
 }
 
-export const getIdUser = async(username) =>{
+export const getIdUser = async (username) => {
     const query = `SELECT id FROM users WHERE username=?`;
     const [id] = await connectionDB.query(query, [username])
-    return(id)
+    return (id)
 }

@@ -3,14 +3,15 @@ import { listCars, registCarInfo, uploadVehiclePhoto } from "../controllers/vehi
 import { uploadUserPhoto } from "../utils/uploadUserPhoto.mjs";
 import { logOut, verifyU } from "../controllers/auth.controllers.mjs";
 import { verifyUserRol } from "../middleware/verifyRol.mjs";
-import { checkAccount, getDataUser } from "../controllers/user.controller.mjs";
+import { checkAccount, driverTravelList, getDataUser, getMyReservations, setIdStripe } from "../controllers/user.controller.mjs";
 import { getDataForm } from "../controllers/driver.controllers.mjs";
 import { getCityImages, getDataTrip, getListTravel, setTrip, uploadCityImage,  } from "../controllers/trip.controllers.mjs";
-import { payment_Intent } from "../controllers/payment.controllers.mjs";
+import { accomplishedTrip, cancelReservation, payment_Intent } from "../controllers/payment.controllers.mjs";
+import { registerUserStripe } from "../controllers/stripe.controllers.mjs";
 
 export const router = Router();
 
-router.get('/logout', logOut)
+//router.get('/logout', logOut)
 
 router.get('/checkAccount', checkAccount);
 
@@ -36,4 +37,14 @@ router.get('/getCityImages', verifyUserRol(['driver', 'Admin']), getCityImages);
 
 router.get('/getTrip/information/:id', getDataTrip);
 
-router.post('/payment_Intent', payment_Intent)
+router.post('/payment_Intent', payment_Intent);
+
+router.get('/getMyReservations', getMyReservations);
+
+router.post('/cancelReservation/:id', cancelReservation);
+
+router.get('/getDriver/travelsList',verifyUserRol(['Admin', "driver"]), driverTravelList);
+
+router.post('/accomplisedTravel', verifyUserRol(["driver", "Admin"]), accomplishedTrip);
+
+//router.post('/stripeConnect', verifyUserRol(["driver", "Admin"]), registerUserStripe)

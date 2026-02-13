@@ -8,13 +8,13 @@ export const getToken = async(request, response, next) =>{
         const {username, password} = request.body;
         
         if(!username || !password){
-            throw new AppError("Username y password requeridos")
+            throw new AppError("Username y password requeridos", 400)
         }
 
         const users = await getUser(username); //optenemos el usuario
     
         if(!users.length){
-            throw new AppError('Credenciales invalidas', 401)
+            throw new AppError('no existe usuario', 401)
         }
 
         const user = users[0]
@@ -22,7 +22,7 @@ export const getToken = async(request, response, next) =>{
         const result = await bcrypt.compare(password, user.password) //comparamos la contra del usuario con la del hash que se tiene en la BD
 
         if(!result){ //si el result da true es que la contra es igual a la de la BD si no es porque se escribio mal
-            throw new AppError('Credenciales invalidas', 401)
+            throw new AppError('Error de contraseña', 401)
         }
 
         const payload = {

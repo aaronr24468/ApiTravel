@@ -22,6 +22,8 @@ Este backend fue desarrollado con enfoque en seguridad, escalabilidad y buenas p
 
 - dotenv
 
+- stripe
+
 🔐 Autenticación y seguridad
 
 - Autenticación basada en JWT.
@@ -38,6 +40,8 @@ Este backend fue desarrollado con enfoque en seguridad, escalabilidad y buenas p
 
 - Prevención de accesos indebidos tipo IDOR.
 
+- idempotencia para evitar cobros o rembolsos dobles
+
 👥 Roles de usuario
 
 - Driver (Conductor)
@@ -47,10 +51,14 @@ Este backend fue desarrollado con enfoque en seguridad, escalabilidad y buenas p
   - Subida de imágenes de vehículos.
 
   - Creación de viajes.
+ 
+  - crear cuenta Stripe Connect
 
 - Passenger (Pasajero)
 
   - Visualización de viajes disponibles.
+ 
+  - ver viajes reservados y el status de los mismos
 
 🚘 Gestión de vehículos
 

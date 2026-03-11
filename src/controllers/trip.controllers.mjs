@@ -1,5 +1,5 @@
 import cloudinary from "../utils/cloudinary.mjs";
-import { cityImage, getCityI, getDataT, getList, setTripDriver } from "../models/trip.models.mjs";
+import { checkDateTrip, cityImage, getCityI, getDataT, getList, getPaymentsIntents, setInProgressReservation, setInprogressTrip, setTripDriver } from "../models/trip.models.mjs";
 import { AppError } from "../utils/AppError.mjs";
 import { getOnBoardStripe } from "../models/user.models.mjs";
 
@@ -166,3 +166,31 @@ export const getDataTrip = async(req, res, next) =>{
         next(error)
     }
 }   
+
+export const setProgressTrip = async(request, response, next) =>{
+    try {
+        const id = Number(request.params.id);
+
+        const date = await checkDateTrip(id)
+
+        if(!date[0].length) throw new AppError('Tienen que conincidir fecha y hora', 400)
+
+        const reservations = await getPaymentsIntents(id); //obtenemos la cantidad de reservaciones por medio de obtener el paymentIntent de los pagos;
+
+        if(reservations.length === 0) throw new AppError('No tienes reservaciones', 403);
+
+        const result = await setInprogressTrip(id);
+
+        if(result.affectedRows === 0) throw new AppError('Error al actulizar status', 400);
+
+        const resultR = await setInProgressReservation(id);
+
+        console.log(resultR)
+
+        if(resultR.affectedRows === 0) throw new AppError('Error al actulizar status Reservaciones', 400);
+
+        response.json({ ok: true, message: "Viaje en progreso"})
+    } catch (error) {
+        next(error)
+    }
+}

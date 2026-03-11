@@ -21,6 +21,7 @@ import { route as tripRoute } from "./routes/trip.router.mjs";
 import { errorHandler } from "./middleware/errorHandler.mjs";
 import { updateExpiredTrips } from "./models/updateExpiredTrips.mjs";
 import { expireBookings } from "./models/user.models.mjs";
+import { refundTripNotCancelled } from "./services/refundTripNotCancelled.mjs";
 
 config();
 
@@ -39,12 +40,13 @@ app.use(cookieParser());
 
 schedule("0 0 * * *", async() =>{
     console.log("Revizando viajes vencidos")
-    await updateExpiredTrips(); //falta agregar que si se cancela viaje automaticamente, que se realicen rembolsos a los que agarraron asiento
+    await refundTripNotCancelled(); //creamos refund de viajes que tengan status 1
+    await updateExpiredTrips(); // actualizamos el status de los viajes a 0
 })
 
-schedule("*/1 * * * *", async() =>{
+schedule("*/1 * * * *", async() =>{ //este schedule es por si quieres un asiento pero no lo pagaste, reviza estatus y cada cierto tiempo libera el asiento
     expireBookings();
-    console.log("Viajes Expirados")
+    console.log("Reservaciones Expirados")
 })
 // app.use(express.urlencoded({extended: false}));
 // app.use(express.static(join(dirname(fileURLToPath(import.meta.url)), '/images')));

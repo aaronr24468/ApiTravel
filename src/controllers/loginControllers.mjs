@@ -11,7 +11,7 @@ export const getToken = async(request, response, next) =>{
             throw new AppError("Username y password requeridos", 400)
         }
 
-        const users = await getUser(username); //optenemos el usuario
+        const users = await getUser(username); //optenemos el usuario por username
     
         if(!users.length){
             throw new AppError('no existe usuario', 401)

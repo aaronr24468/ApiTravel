@@ -76,7 +76,17 @@ export const payment_Intent = async (req, res, next) => {
 export const cancelReservation = async (request, response, next) => {
     try {
         const { id } = request.params;
+
         const data = await getIdIntentAndPrice(id);
+
+        const idTrip = data[0].trip_id;
+
+        const statusTrip = await getStatusTrip(idTrip);
+
+        const status = statusTrip[0].status;
+
+        if(status === 0) throw new AppError('Este viaje ya fue finalizado', 400)
+
         const amount = data[0].total_amount.split('.')[0] * 100 / 2;
         const paymentIntenId = data[0].payment_intent_id;
 

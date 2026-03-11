@@ -236,3 +236,21 @@ export const getPaymentStatus = async(data) =>{
     const [dataR] =  await connectionDB.query(query, [data.trip_id]);
     return(dataR)
 }
+
+export const setInprogressTrip = async(id) =>{
+    const query =  `UPDATE trips SET status='3' WHERE id=${id}`;
+    const [result] = await connectionDB.query(query);
+    return(result)
+}
+
+export const setInProgressReservation = async(id) =>{
+    const query = `UPDATE reservations SET trip_completed=3 WHERE trip_id=${id}`;
+    const [result] = await connectionDB.query(query);
+    return(result)
+}
+
+export const checkDateTrip = async(id) =>{
+    const query = `SELECT origin_city FROM trips WHERE id=? AND timestamp(departure_date, departure_hour) < now() AND status=1;`
+    const result = await connectionDB.query(query, [id]);
+    return(result)
+}

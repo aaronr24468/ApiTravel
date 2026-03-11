@@ -2,7 +2,7 @@ import { Router } from "express";
 import { verifyUserRol } from "../middleware/verifyRol.mjs";
 import { listCars, registCarInfo, uploadVehiclePhoto } from "../controllers/vehicle.controllers.mjs";
 import { uploadUserPhoto } from "../utils/uploadUserPhoto.mjs";
-import { getCityImages, setTrip } from "../controllers/trip.controllers.mjs";
+import { getCityImages, setProgressTrip, setTrip } from "../controllers/trip.controllers.mjs";
 import { driverTravelList } from "../controllers/user.controller.mjs";
 import { accomplishedTrip, driverCancelTrip } from "../controllers/payment.controllers.mjs";
 import { getListUserReservations } from "../controllers/driver.controllers.mjs";
@@ -25,4 +25,6 @@ router.post('/accomplisedTravel', verifyUserRol(["driver", "Admin"]), accomplish
 
 router.put('/cancelTravel', verifyUserRol(["driver","Admin"]), driverCancelTrip);
 
-router.get('/list/users/reservation/:id', verifyUserRol(["driver", "Admin"]), getListUserReservations)
+router.get('/list/users/reservation/:id', verifyUserRol(["driver", "Admin"]), getListUserReservations);
+
+router.put('/trip/progress/:id', verifyUserRol(["driver","Admin"]), setProgressTrip)

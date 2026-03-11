@@ -5,7 +5,7 @@ export const getPrice = () =>{
 }
 
 export const getIdIntentAndPrice = async(id) =>{
-    const query = 'SELECT payment_intent_id, total_amount, user_id, payment_status FROM reservations where id=?';
+    const query = 'SELECT payment_intent_id, total_amount, user_id, payment_status, trip_id FROM reservations where id=?';
     const [data] = await connectionDB.query(query, [id])
     return(data)
 }

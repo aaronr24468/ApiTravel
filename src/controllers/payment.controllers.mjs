@@ -3,7 +3,7 @@ import { AppError } from "../utils/AppError.mjs";
 import { config } from 'dotenv';
 import { getIdIntentAndPrice, updateRefundStatus, updateRefundStatusByPaymentId } from "../models/payment.models.mjs";
 import { getIDstripeDriver, tripCompleted } from "../models/user.models.mjs";
-import { canceltripUpdate, finishTripUpdate, getDataT, getPaymentsIntents, getPriceTrip, getStatusTrip, pendingPaidUser, refundExist, updateSeatsStatus } from "../models/trip.models.mjs";
+import { canceltripUpdate, finishTripUpdate, getDataT, getPaymentsIntents, getPriceTrip, getStatusTrip, pendingPaidUser, refundExist, updateSeatsStatus, verifyReviewUsers } from "../models/trip.models.mjs";
 config();
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
@@ -117,6 +117,16 @@ export const accomplishedTrip = async (request, response, next) => {
         const idDriver = request.auth.id;
 
         const idTravel = request.body.id_Travel;
+
+        //obtener si ya tenemos alguna review del conductor para permitirle cobrar o terminar el viaje;
+
+        const reviews = await verifyReviewUsers(idTravel);
+
+        if(!reviews.lenght) throw new AppError("Aun no tienes reviews del viaje", 403);
+
+        //investigar como hacer si tiene una review o si pasaron dos horas despues de la llegada
+
+        // ---------------------------------------------------------------------------------------------
 
         const dataTrip = await getDataT(idTravel);
 

@@ -1,3 +1,4 @@
+import { setReview, verifyArrivedHour } from "../models/trip.models.mjs";
 import { getInfo, getListTravelsDriver, getMyR, getProfileDriverInfo, getProfileUserInfo, setIdS } from "../models/user.models.mjs";
 import { AppError } from "../utils/AppError.mjs";
 
@@ -97,6 +98,38 @@ export const driverTravelList = async(request, response, next) =>{
         const idDriver = request.auth.id;
         const listT = await getListTravelsDriver(idDriver);
         response.json({ok: true, message: 'Success', list: listT})
+    } catch (error) {
+        next(error)
+    }
+}
+
+export const setReviewDriver = async(request, response, next) =>{
+    try {
+        const data = {
+            id: request.body.id, //identificador del viaje
+            id_user: request.auth.id, //identificador del usuario
+            id_driver: '',
+            qualification: request.body.qualification, //calificacion del viaje
+            msg: request.body.msg //mensaje para el review
+        }
+
+        if(!data.qualification || !data.msg)throw new AppError('Falta informacion', 400);
+
+        const hourVefify = await verifyArrivedHour(data.id)
+
+        console.log(hourVefify)
+
+        data.id_driver = hourVefify[0].driver_id;
+
+        console.log(data)
+
+        if(!hourVefify.length)throw new AppError('Aun no es la hora de llegada', 401);
+
+        const reviewSet = await setReview(data)
+
+        if(reviewSet.affectedRows === 0) throw new AppError('Error al guardar informacion', 403);
+
+        response.json({ok: true, message: "Calificacion exitosa"})
     } catch (error) {
         next(error)
     }

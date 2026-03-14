@@ -254,3 +254,26 @@ export const checkDateTrip = async(id) =>{
     const result = await connectionDB.query(query, [id]);
     return(result)
 }
+
+export const verifyArrivedHour = async(id) =>{
+    const query =  `SELECT id, driver_id FROM trips t WHERE id=${id} AND TIMESTAMP(departure_date, arrived_hour) < NOW()`;
+    const [res] =  await connectionDB.query(query);
+    return(res)
+}
+
+export const setReview = async(data) =>{
+    const query = `INSERT INTO reviews(user_id, driver_id, trip_id, message, qualification) values(?,?,?,?,?)`;
+    const [result] = await connectionDB.query(query, [data.id_user, data.id_driver, data.id, data.msg, data.qualification]);
+    return(data)
+}
+
+export const verifyReviewUsers = async(idTravel) =>{
+    const query = `
+    SELECT r.message FROM reviews r 
+    INNER JOIN trips t
+    ON r.trip_id = t.id
+    WHERE trip_id=${idTravel}`;
+    cosnt [res] =  await connectionDB.query(query);
+    return(res
+    )
+}

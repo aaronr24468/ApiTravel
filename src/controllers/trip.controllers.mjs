@@ -1,5 +1,5 @@
 import cloudinary from "../utils/cloudinary.mjs";
-import { checkDateTrip, cityImage, getCityI, getDataT, getList, getPaymentsIntents, setInProgressReservation, setInprogressTrip, setTripDriver } from "../models/trip.models.mjs";
+import { checkDateTrip, cityImage, getCityI, getDataT, getList, getPaymentsIntents, getReviews, getReviewsRating, setInProgressReservation, setInprogressTrip, setTripDriver } from "../models/trip.models.mjs";
 import { AppError } from "../utils/AppError.mjs";
 import { getOnBoardStripe } from "../models/user.models.mjs";
 
@@ -145,8 +145,14 @@ export const getDataTrip = async(req, res, next) =>{
         const {id} = req.params;
         if(!id) throw new AppError('No seleccionaste nada', 403);
 
-        const trip = await getDataT(id)
-       
+        const trip = await getDataT(id);
+
+        const idDriver = trip[0].driver_id
+
+        const reviews = await getReviewsRating(idDriver);
+
+        reviews[0].rating = Number(reviews[0].rating).toFixed(1)
+        
         const splitD = trip[0].departure_date.split('-');
 
         const date = {
@@ -161,7 +167,7 @@ export const getDataTrip = async(req, res, next) =>{
         trip[0].year = date.year
         trip[0].hour = date.hour
 
-        res.json({ok: true, message: "Success", trip})
+        res.json({ok: true, message: "Success", trip, reviews})
     } catch (error) {
         next(error)
     }
@@ -190,6 +196,17 @@ export const setProgressTrip = async(request, response, next) =>{
         if(resultR.affectedRows === 0) throw new AppError('Error al actulizar status Reservaciones', 400);
 
         response.json({ ok: true, message: "Viaje en progreso"})
+    } catch (error) {
+        next(error)
+    }
+}
+
+export const getReviewsData = async(request, response, next) =>{
+    try {
+        const idTrip = request.params.id;
+        console.log(idTrip)
+        const reviewsResult = await getReviews(idTrip); 
+        response.json({ok: true, message: 'Success', reviews: reviewsResult})
     } catch (error) {
         next(error)
     }

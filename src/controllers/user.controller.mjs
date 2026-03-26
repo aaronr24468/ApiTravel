@@ -1,4 +1,4 @@
-import { setReview, verifyArrivedHour } from "../models/trip.models.mjs";
+import { previousReview, setReview, verifyArrivedHour } from "../models/trip.models.mjs";
 import { getInfo, getListTravelsDriver, getMyR, getProfileDriverInfo, getProfileUserInfo, setIdS } from "../models/user.models.mjs";
 import { AppError } from "../utils/AppError.mjs";
 
@@ -113,24 +113,32 @@ export const setReviewDriver = async(request, response, next) =>{
             msg: request.body.msg //mensaje para el review
         }
 
+        //verificar si tenemos una review de el viaje con el data.id para evitar hacer reviews de mas
+
+        //en progreso
+
         if(!data.qualification || !data.msg)throw new AppError('Falta informacion', 400);
 
-        const hourVefify = await verifyArrivedHour(data.id)
+        const id = data.id;
 
-        console.log(hourVefify)
-
-        data.id_driver = hourVefify[0].driver_id;
-
-        console.log(data)
+        const hourVefify = await verifyArrivedHour(id)
 
         if(!hourVefify.length)throw new AppError('Aun no es la hora de llegada', 401);
+
+        const reviewPre = await previousReview(data);
+
+        if(reviewPre) throw new AppError('Ya comentaste en este viaje', 402);
+
+        data.id_driver = hourVefify[0].driver_id;
 
         const reviewSet = await setReview(data)
 
         if(reviewSet.affectedRows === 0) throw new AppError('Error al guardar informacion', 403);
 
         response.json({ok: true, message: "Calificacion exitosa"})
+
     } catch (error) {
+        
         next(error)
     }
 }

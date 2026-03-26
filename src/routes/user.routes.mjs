@@ -8,4 +8,4 @@ router.get('/getMyReservations', getMyReservations);
 
 router.post('/cancelReservation/:id', cancelReservation);
 
-router.post('/review/trips', setReviewDriver)
+router.post('/review/trips', setReviewDriver);

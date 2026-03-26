@@ -3,7 +3,7 @@ import { AppError } from "../utils/AppError.mjs";
 import { config } from 'dotenv';
 import { getIdIntentAndPrice, updateRefundStatus, updateRefundStatusByPaymentId } from "../models/payment.models.mjs";
 import { getIDstripeDriver, tripCompleted } from "../models/user.models.mjs";
-import { canceltripUpdate, finishTripUpdate, getDataT, getPaymentsIntents, getPriceTrip, getStatusTrip, pendingPaidUser, refundExist, updateSeatsStatus, verifyReviewUsers } from "../models/trip.models.mjs";
+import { canceltripUpdate, checkIntervalTrip, finishTripUpdate, getDataT, getPaymentsIntents, getPriceTrip, getStatusTrip, pendingPaidUser, refundExist, reservationStatus, updateSeatsStatus, verifyReviewUsers } from "../models/trip.models.mjs";
 config();
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
@@ -26,11 +26,13 @@ export const payment_Intent = async (req, res, next) => {
 
         //console.log(data)
 
+        const resultStatusR = await reservationStatus(data);
+
         const status = await getStatusTrip(data.tripId);
 
-        console.log(status)
-
         if (!data.agreePolicies) throw new AppError('Necesitas aceptar la política de cancelación', 403);
+
+        if(resultStatusR) throw new AppError('Ya tienes reservacion', 406)
 
         if(status[0].driver_id === data.userId) throw new AppError("Como creador de este viaje no puedes comprar asientos", 400)
 
@@ -42,7 +44,6 @@ export const payment_Intent = async (req, res, next) => {
 
         if(resSeats.affectedRows === 0) throw new AppError("Asientos agotados", 400)
 
-        console.log(data)
 
         await pendingPaidUser(data)
 
@@ -50,7 +51,7 @@ export const payment_Intent = async (req, res, next) => {
         //dejar como pendiente de momento, obtener el precio desde mysql para evitar inyeccion de datos en el front con el precio del viaje
 
 
-        const amountInCents = Math.round(Number(req.body.amount) * 100);
+        const amountInCents = Math.round(Number(status[0].price) * 100);
 
         const paymentIntent = await stripe.paymentIntents.create({
             amount: amountInCents,
@@ -122,19 +123,19 @@ export const accomplishedTrip = async (request, response, next) => {
 
         const reviews = await verifyReviewUsers(idTravel);
 
-        if(!reviews.lenght) throw new AppError("Aun no tienes reviews del viaje", 403);
+        const interval = await checkIntervalTrip(idTravel)
 
-        //investigar como hacer si tiene una review o si pasaron dos horas despues de la llegada
+        if(!reviews && !interval) throw new AppError("Aun no puedes finalizar el viaje", 403);
 
-        // ---------------------------------------------------------------------------------------------
+        // throw new AppError("entro")
 
-        const dataTrip = await getDataT(idTravel);
+        //const dataTrip = await getDataT(idTravel);
 
-        const now = new Date(); //obtenemos la fecha de hoy
+        // const now = new Date(); //obtenemos la fecha de hoy
 
-        const dateArrived = new Date(`${dataTrip[0].departure_date}T${dataTrip[0].arrived_hour}:00`); //convertimos la fecha en string a tiempo para poder hacer la comparacion
+        // const dateArrived = new Date(`${dataTrip[0].departure_date}T${dataTrip[0].arrived_hour}:00`); //convertimos la fecha en string a tiempo para poder hacer la comparacion
 
-        if(now < dateArrived) throw new AppError("Aun no se cumple la fecha y hora para finalizar el viaje", 400)//si la fecha de hoy es menor a la fecha del viaje entra aqui
+        // if(now < dateArrived) throw new AppError("Aun no se cumple la fecha y hora para finalizar el viaje", 400)//si la fecha de hoy es menor a la fecha del viaje entra aqui
 
         const stripeID = await getIDstripeDriver(idDriver); //obtenemos el id de stripe del conductor con el cual le mandaremos el dinero
 

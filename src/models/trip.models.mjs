@@ -226,9 +226,15 @@ export const canceltripUpdate = async(id) =>{
 }
 
 export const getStatusTrip = async(id) =>{
-    const query = 'SELECT t.status, t.driver_id, t.available_seats from trips t WHERE id=?';
+    const query = 'SELECT t.status, t.driver_id, t.available_seats, t.price from trips t WHERE id=?';
     const [status] = await connectionDB.query(query, [id]);
     return(status)
+}
+
+export const reservationStatus = async(data) =>{
+    const query = `SELECT 1 FROM reservations WHERE user_id=? AND trip_id=? AND refund_amount=? AND payment_status=?`;
+    const [result] = await connectionDB.query(query, [data.userId, data.tripId, "0.00", 'paid'])
+    return(result.length > 0)
 }
 
 export const getPaymentStatus = async(data) =>{
@@ -238,14 +244,14 @@ export const getPaymentStatus = async(data) =>{
 }
 
 export const setInprogressTrip = async(id) =>{
-    const query =  `UPDATE trips SET status='3' WHERE id=${id}`;
-    const [result] = await connectionDB.query(query);
+    const query =  `UPDATE trips SET status='3' WHERE id=?`;
+    const [result] = await connectionDB.query(query, [id]);
     return(result)
 }
 
 export const setInProgressReservation = async(id) =>{
-    const query = `UPDATE reservations SET trip_completed=3 WHERE trip_id=${id}`;
-    const [result] = await connectionDB.query(query);
+    const query = `UPDATE reservations SET trip_completed=3 WHERE trip_id=?`;
+    const [result] = await connectionDB.query(query, [id]);
     return(result)
 }
 
@@ -256,8 +262,8 @@ export const checkDateTrip = async(id) =>{
 }
 
 export const verifyArrivedHour = async(id) =>{
-    const query =  `SELECT id, driver_id FROM trips t WHERE id=${id} AND TIMESTAMP(departure_date, arrived_hour) < NOW()`;
-    const [res] =  await connectionDB.query(query);
+    const query =  `SELECT id, driver_id FROM trips t WHERE id=? AND TIMESTAMP(departure_date, arrived_hour) < NOW()`;
+    const [res] =  await connectionDB.query(query, [id]);
     return(res)
 }
 
@@ -267,13 +273,44 @@ export const setReview = async(data) =>{
     return(data)
 }
 
+export const previousReview = async(data) =>{
+    const query = 'SELECT 1 FROM reviews WHERE user_id=? AND trip_id=?';
+    const [dataRequest] = await connectionDB.query(query, [data.id_user, data.id])
+    return(dataRequest.length > 0);
+}
+
 export const verifyReviewUsers = async(idTravel) =>{
+
     const query = `
-    SELECT r.message FROM reviews r 
+    SELECT 1 FROM reviews r 
     INNER JOIN trips t
     ON r.trip_id = t.id
-    WHERE trip_id=${idTravel}`;
-    cosnt [res] =  await connectionDB.query(query);
-    return(res
-    )
+    WHERE trip_id=?`;
+
+    const [res] =  await connectionDB.query(query, [idTravel]);
+
+    return(res.length > 0)
+}
+
+export const checkIntervalTrip = async(idTravel) =>{
+    const query = `select 1 from trips 
+    WHERE id=? 
+    AND 
+    timestamp(departure_date, arrived_hour) <= NOW() - INTERVAL 2 hour;`
+
+    const [res] = await connectionDB.query(query, [idTravel]);
+
+    return(res.length > 0)
+}
+
+export const getReviewsRating = async(idDriver) =>{
+    const query = `SELECT avg(r.qualification) as rating, count(*) as total_reviews from reviews r WHERE driver_id=?`;
+    const [result] = await connectionDB.query(query, [idDriver]);
+    return(result);
+}
+
+export const getReviews = async(idTrip) =>{
+    const query = `SELECT r.message, r.qualification, u.image, u.username FROM reviews r INNER JOIN users u ON r.user_id = u.id WHERE driver_id=?`;
+    const [reviews] =  await connectionDB.query(query, [idTrip]);
+    return(reviews)
 }

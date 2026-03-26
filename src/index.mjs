@@ -1,8 +1,6 @@
 import express from "express";
 import cors from 'cors';
-import {createServer, get} from 'http'
-import {dirname, join} from 'path';
-import { fileURLToPath } from "url";
+import {createServer} from 'http';
 import morgan from "morgan";
 import { expressjwt } from "express-jwt";
 import cookieParser from "cookie-parser";
@@ -18,7 +16,9 @@ import { router as stripeConnect } from "./routes/stripe.routes.mjs";
 import { router as driverRoute } from "./routes/driver.routes.mjs";
 import { router as userRoute} from "./routes/user.routes.mjs";
 import { route as tripRoute } from "./routes/trip.router.mjs";
+
 import { errorHandler } from "./middleware/errorHandler.mjs";
+
 import { updateExpiredTrips } from "./models/updateExpiredTrips.mjs";
 import { expireBookings } from "./models/user.models.mjs";
 import { refundTripNotCancelled } from "./services/refundTripNotCancelled.mjs";

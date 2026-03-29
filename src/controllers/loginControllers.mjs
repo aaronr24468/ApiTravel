@@ -39,8 +39,7 @@ export const getToken = async(request, response, next) =>{
         response.cookie('travelToken', token,{
             httpOnly: true,
             secure: true,
-            sameSite: "none",
-            partitioned: true
+            sameSite: "lax"
         })
 
         response.json({ok: true, message: "Login exitoso"})

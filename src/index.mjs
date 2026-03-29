@@ -31,7 +31,7 @@ const app = express();
 const server = createServer(app)
 
 app.use(cors({
-    origin: 'http://localhost:5173',
+    origin: 'https://www.moveandgo.com.mx/',
     credentials: true
 }));
 

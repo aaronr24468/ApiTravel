@@ -95,7 +95,7 @@ export const myEarnings = async(request, response, next) =>{
 
         const stripe_account_id = user[0].stripe_account_id;
 
-        console.log(stripe_account_id)
+        console.log(stripe_account_id, process.env.STRIPE_SECRET_KEY)
 
         const result = await stripe.accounts.createLoginLink(stripe_account_id);
 

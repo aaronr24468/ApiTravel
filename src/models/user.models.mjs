@@ -36,7 +36,7 @@ export const getProfileUserInfo = async(id) =>{
 }
 
 export const getProfileDriverInfo = async(id) =>{
-    const query = 'SELECT u.name, u.age, u.image, u.rol, u.stripe_account_id, u.stripe_onboarded, u.username, u.email, u.stripe_account_id, u.stripe_onboarded FROM users u WHERE id=?';
+    const query = 'SELECT u.name, u.age, u.image, u.rol, u.stripe_account_id, u.stripe_onboarded, u.username, u.email, u.stripe_onboarded FROM users u WHERE id=?';
     const [data] = await connectionDB.query(query, [id])
     return(data)
 }

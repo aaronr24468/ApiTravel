@@ -45,7 +45,7 @@ schedule("0 0 * * *", async() =>{
 })
 
 schedule("*/1 * * * *", async() =>{ //este schedule es por si quieres un asiento pero no lo pagaste, reviza estatus y cada cierto tiempo libera el asiento
-    expireBookings();
+    expireBookings(); 
     console.log("Reservaciones Expirados")
 })
 // app.use(express.urlencoded({extended: false}));

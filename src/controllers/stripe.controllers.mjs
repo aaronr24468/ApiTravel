@@ -33,8 +33,8 @@ export const registerUserStripe = async (request, response, next) => {
 
             const accountLink = await stripe.accountLinks.create({
                 account: account.id,
-                refresh_url: 'http://localhost:5173/move&go/tripG',
-                return_url: 'http://localhost:5173/move&go',
+                refresh_url: 'https://www.moveandgo.com.mx/move&go/tripG',
+                return_url: 'https://www.moveandgo.com.mx/move&go',
                 type: 'account_onboarding'
             })
             response.json({ ok: true, message: "success", url: accountLink.url })
@@ -44,8 +44,8 @@ export const registerUserStripe = async (request, response, next) => {
 
         const accountLink = await stripe.accountLinks.create({
             account: stripe_account_id,
-            refresh_url: 'http://localhost:5173/move&go/tripG',
-            return_url: 'http://localhost:5173/move&go/profile',
+            refresh_url: 'https://www.moveandgo.com.mx/move&go/tripG',
+            return_url: 'https://www.moveandgo.com.mx/move&go/profile',
             type: 'account_onboarding'
         })
         response.json({ ok: true, message: "success", url: accountLink.url })
@@ -87,9 +87,15 @@ export const myEarnings = async(request, response, next) =>{
     try {
         const id = request.auth.id;
 
+        console.log(id)
+
         const user = await getProfileDriverInfo(id);
 
+        console.log("paso la query")
+
         const stripe_account_id = user[0].stripe_account_id;
+
+        console.log(stripe_account_id)
 
         const result = await stripe.accounts.createLoginLink(stripe_account_id);
 

@@ -32,17 +32,17 @@ export const payment_Intent = async (req, res, next) => {
 
         if (!data.agreePolicies) throw new AppError('Necesitas aceptar la política de cancelación', 403);
 
-        if(resultStatusR) throw new AppError('Ya tienes reservacion', 406)
+        if (resultStatusR) throw new AppError('Ya tienes reservacion', 406)
 
-        if(status[0].driver_id === data.userId) throw new AppError("Como creador de este viaje no puedes comprar asientos", 400)
+        if (status[0].driver_id === data.userId) throw new AppError("Como creador de este viaje no puedes comprar asientos", 400)
 
-        if(status[0].status === 0) throw new AppError('Viaje no disponible', 401)
+        if (status[0].status === 0) throw new AppError('Viaje no disponible', 401)
 
-        if(status[0].available_seats === 0) throw new AppError("Asientos agotados", 400);
+        if (status[0].available_seats === 0) throw new AppError("Asientos agotados", 400);
 
         const resSeats = await updateSeatsStatus(data)
 
-        if(resSeats.affectedRows === 0) throw new AppError("Asientos agotados", 400)
+        if (resSeats.affectedRows === 0) throw new AppError("Asientos agotados", 400)
 
 
         await pendingPaidUser(data)
@@ -86,12 +86,12 @@ export const cancelReservation = async (request, response, next) => {
 
         const status = statusTrip[0].status;
 
-        if(status === 0) throw new AppError('Este viaje ya fue finalizado', 400)
+        if (status === 0) throw new AppError('Este viaje ya fue finalizado', 400)
 
         const amount = data[0].total_amount.split('.')[0] * 100 / 2;
         const paymentIntenId = data[0].payment_intent_id;
 
-        if(data[0].payment_status === "pending") throw new AppError("Este viaje no puede ser cancelado", 403);
+        if (data[0].payment_status === "pending") throw new AppError("Este viaje no puede ser cancelado", 403);
 
         const refund = await stripe.refunds.create({
             payment_intent: paymentIntenId,
@@ -114,7 +114,7 @@ export const cancelReservation = async (request, response, next) => {
 
 export const accomplishedTrip = async (request, response, next) => {
     try {
-        
+
         const idDriver = request.auth.id;
 
         const idTravel = request.body.id_Travel;
@@ -125,7 +125,7 @@ export const accomplishedTrip = async (request, response, next) => {
 
         const interval = await checkIntervalTrip(idTravel)
 
-        if(!reviews && !interval) throw new AppError("Aun no puedes finalizar el viaje", 403);
+        if (!reviews && !interval) throw new AppError("Aun no puedes finalizar el viaje", 403);
 
         // throw new AppError("entro")
 
@@ -145,19 +145,19 @@ export const accomplishedTrip = async (request, response, next) => {
         const statusT = infoTrip[0].status;
         const payout = infoTrip[0].payout
 
-        if(idPayout || statusT === 0 || payout === "paid") throw new AppError("Este viaje ya fue procesado", 400)
+        if (idPayout || statusT === 0 || payout === "paid") throw new AppError("Este viaje ya fue procesado", 400)
 
-        if(infoTrip[0].seats === infoTrip[0].available_seats) throw new AppError('No tienes asientos reservados', 401)
+        if (infoTrip[0].seats === infoTrip[0].available_seats) throw new AppError('No tienes asientos reservados', 401)
 
         //se resta la cantidad de hacientos que tiene el carro con la cantidad de hacientos disponibles en el viaje para sacar cuantos quedaron 
         const totalTicket = infoTrip[0].seats - infoTrip[0].available_seats;
 
         //precio del ticket por la cantidad de usuarios que los adquirieron
-        const gross = Number(infoTrip[0].price) * totalTicket; 
+        const gross = Number(infoTrip[0].price) * totalTicket;
 
         // se multiplica por 0.97 para que nos regrese el total menos el 3% y se multiplica por 100 dado a que son centavos
-        const totalPayout = Math.round(gross * 0.97 * 100); 
-       
+        const totalPayout = Math.round(gross * 0.97 * 100);
+
         const idStripeDriver = stripeID[0].stripe_account_id;
         console.log(idStripeDriver)
 
@@ -165,7 +165,7 @@ export const accomplishedTrip = async (request, response, next) => {
             amount: totalPayout,
             currency: 'mxn',
             destination: idStripeDriver,
-            metadata:{
+            metadata: {
                 idTrip: idTravel
             }
         })
@@ -178,49 +178,54 @@ export const accomplishedTrip = async (request, response, next) => {
 
         const resUpdate = await finishTripUpdate(idTravel, idPaid, status); //actualizamos status y ponemos como pago pendiente y guardamos el id del pago
 
-        if(resUpdate.affectedRows === 0) throw new AppError('Error al actualizar estado de viaje', 400);
+        if (resUpdate.affectedRows === 0) throw new AppError('Error al actualizar estado de viaje', 400);
 
-        response.json({ok: true, message: "Se finalizo viaje con exito"})
+        response.json({ ok: true, message: "Se finalizo viaje con exito" })
     } catch (error) {
         next(error)
-    } 
+    }
 }
 
-export const driverCancelTrip = async(request, response, next) =>{
+export const driverCancelTrip = async (request, response, next) => {
     try {
         const id = request.body.id_Travel;
-        
+
         const infoTrip = await getPriceTrip(id); //sacamos datos para idempotencia con la cual evitamos pagos dobles
 
         const refundAmount = Number(infoTrip[0].price) * 100 //cantidad de rembolso en centavos
 
         const amount = infoTrip[0].price
 
-        const statusT = infoTrip[0].status;;
+        const statusT = infoTrip[0].status;
 
-        if(statusT === 0) throw new AppError("Este viaje ya fue cancelado previamente", 400);
+        console.log(statusT)
+
+        if (statusT === 0) throw new AppError("Este viaje ya fue cancelado previamente", 400);
 
         const payment_intent_id_array = await getPaymentsIntents(id);
 
         console.log(payment_intent_id_array)
 
-        for(let paymentId of payment_intent_id_array){
-            const result = await stripe.refunds.create({
-                amount: refundAmount,
-                payment_intent: paymentId.payment_intent_id
-            })
+        if (payment_intent_id_array.length > 0) {
+            for (let paymentId of payment_intent_id_array) {
+                const result = await stripe.refunds.create({
+                    amount: refundAmount,
+                    payment_intent: paymentId.payment_intent_id
+                })
 
-            console.log(result)
+                console.log(result)
 
-            if(result.status != "succeeded") throw new AppError('Error al hacer rembolso', 402);
+                if (result.status != "succeeded") throw new AppError('Error al hacer rembolso', 402);
 
-            const resD = await updateRefundStatusByPaymentId(amount, paymentId.payment_intent_id)
-            console.log(resD)
+                const resD = await updateRefundStatusByPaymentId(amount, paymentId.payment_intent_id)
+                console.log(resD)
+            }
         }
+
 
         const res = await canceltripUpdate(id)
 
-        response.json({ok: true, message: 'Se realizo cancelacion con exito'})
+        response.json({ ok: true, message: 'Se realizo cancelacion con exito' })
 
     } catch (error) {
         next(error)

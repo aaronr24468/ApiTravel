@@ -215,7 +215,7 @@ export const updateWebhookTransferDriver = async(idPayout) =>{
 }
 
 export const getPaymentsIntents = async(id_trip) =>{
-    const query = 'SELECT r.payment_intent_id from reservations r where trip_id=? AND refund_status IS null';
+    const query = 'SELECT r.payment_intent_id from reservations r where trip_id=? AND r.payment_intent_id IS NOT NULL AND r.payment_intent_id != "" ';
     const [payment_ids] = await connectionDB.query(query, [id_trip])
     return(payment_ids)
 }

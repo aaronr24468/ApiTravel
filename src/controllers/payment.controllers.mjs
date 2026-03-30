@@ -202,28 +202,36 @@ export const driverCancelTrip = async (request, response, next) => {
 
         console.log(statusT)
 
-        if (statusT === 0) throw new AppError("Este viaje ya fue cancelado previamente", 400);
+        if (statusT === 0) throw new AppError("Este viaje ya fue cancelado previamente", 401);
 
         const payment_intent_id_array = await getPaymentsIntents(id);
 
         console.log(payment_intent_id_array)
 
-        for (let paymentId of payment_intent_id_array) {
-            const result = await stripe.refunds.create({
-                amount: refundAmount,
-                payment_intent: paymentId.payment_intent_id
-            })
+        if (payment_intent_id_array.length === 0) {
+            const res = await canceltripUpdate(id)
+        } else {
 
-            console.log(result)
+            for (let paymentId of payment_intent_id_array) {
 
-            if (result.status != "succeeded") throw new AppError('Error al hacer rembolso', 402);
+                const result = await stripe.refunds.create({
+                    amount: refundAmount,
+                    payment_intent: paymentId.payment_intent_id
+                })
 
-            const resD = await updateRefundStatusByPaymentId(amount, paymentId.payment_intent_id)
-            console.log(resD)
+                console.log(result)
+
+                if (result.status != "succeeded") throw new AppError('Error al hacer rembolso', 402);
+
+                const resD = await updateRefundStatusByPaymentId(amount, paymentId.payment_intent_id);
+
+                console.log(resD)
+            }
+
+            const res = await canceltripUpdate(id)
         }
 
-
-        const res = await canceltripUpdate(id)
+        //const res = await canceltripUpdate(id)
 
         response.json({ ok: true, message: 'Se realizo cancelacion con exito' })
 

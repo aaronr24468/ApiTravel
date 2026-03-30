@@ -4,8 +4,7 @@ export const logOut = (request, response, next) => {
     try {
         response.clearCookie('travelToken', {
             secure: true,
-            sameSite: "none",
-            partitioned: true
+            sameSite: "lax"
         });
         response.json({ok: true,  logout: true });
     } catch (error) {

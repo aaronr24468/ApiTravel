@@ -37,6 +37,7 @@ export const registerUser = async (request, response, next) => {
         data.password = hashP;
 
         const res = await registerU(data);
+        
         const id = res[0].insertId;
 
         if (res === "MATCH") {

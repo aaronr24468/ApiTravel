@@ -190,6 +190,8 @@ export const driverCancelTrip = async (request, response, next) => {
     try {
         const id = request.body.id_Travel;
 
+        console.log(id)
+
         const infoTrip = await getPriceTrip(id); //sacamos datos para idempotencia con la cual evitamos pagos dobles
 
         const refundAmount = Number(infoTrip[0].price) * 100 //cantidad de rembolso en centavos
@@ -206,20 +208,18 @@ export const driverCancelTrip = async (request, response, next) => {
 
         console.log(payment_intent_id_array)
 
-        if (payment_intent_id_array.length > 0) {
-            for (let paymentId of payment_intent_id_array) {
-                const result = await stripe.refunds.create({
-                    amount: refundAmount,
-                    payment_intent: paymentId.payment_intent_id
-                })
+        for (let paymentId of payment_intent_id_array) {
+            const result = await stripe.refunds.create({
+                amount: refundAmount,
+                payment_intent: paymentId.payment_intent_id
+            })
 
-                console.log(result)
+            console.log(result)
 
-                if (result.status != "succeeded") throw new AppError('Error al hacer rembolso', 402);
+            if (result.status != "succeeded") throw new AppError('Error al hacer rembolso', 402);
 
-                const resD = await updateRefundStatusByPaymentId(amount, paymentId.payment_intent_id)
-                console.log(resD)
-            }
+            const resD = await updateRefundStatusByPaymentId(amount, paymentId.payment_intent_id)
+            console.log(resD)
         }
 
 

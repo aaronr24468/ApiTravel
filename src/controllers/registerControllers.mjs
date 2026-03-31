@@ -129,8 +129,6 @@ export const registerDriver = async (request, response, next) => {
         
         const image = request.body.image;
 
-        console.log(image)
-
         if(!image) throw new AppError('Necesitas seleccionar una imagen de ti', 403)
 
 

@@ -24,8 +24,6 @@ export const payment_Intent = async (req, res, next) => {
             agreePolicies: req.body.policies
         }
 
-        //console.log(data)
-
         const resultStatusR = await reservationStatus(data);
 
         const status = await getStatusTrip(data.tripId);
@@ -67,6 +65,7 @@ export const payment_Intent = async (req, res, next) => {
         if (!paymentIntent.status === "requires_payment_method") throw new AppError('Error al generar pago', 400);
 
         data.payment_intent_id = paymentIntent.id;
+
 
         res.json({ ok: true, message: 'Success', clientSecret: paymentIntent.client_secret });
     } catch (error) {
@@ -159,7 +158,6 @@ export const accomplishedTrip = async (request, response, next) => {
         const totalPayout = Math.round(gross * 0.97 * 100);
 
         const idStripeDriver = stripeID[0].stripe_account_id;
-        console.log(idStripeDriver)
 
         const result = await stripe.transfers.create({
             amount: totalPayout,
@@ -173,8 +171,6 @@ export const accomplishedTrip = async (request, response, next) => {
         const idPaid = result.id;
 
         const status = "pending";
-
-        console.log(idPaid, "id pago");
 
         const resUpdate = await finishTripUpdate(idTravel, idPaid, status); //actualizamos status y ponemos como pago pendiente y guardamos el id del pago
 
@@ -190,8 +186,6 @@ export const driverCancelTrip = async (request, response, next) => {
     try {
         const id = request.body.id_Travel;
 
-        console.log(id)
-
         const infoTrip = await getPriceTrip(id); //sacamos datos para idempotencia con la cual evitamos pagos dobles
 
         const refundAmount = Number(infoTrip[0].price) * 100 //cantidad de rembolso en centavos
@@ -200,13 +194,9 @@ export const driverCancelTrip = async (request, response, next) => {
 
         const statusT = infoTrip[0].status;
 
-        console.log(statusT)
-
         if (statusT === 0) throw new AppError("Este viaje ya fue cancelado previamente", 401);
 
         const payment_intent_id_array = await getPaymentsIntents(id);
-
-        console.log(payment_intent_id_array)
 
         if (payment_intent_id_array.length === 0) {
             const res = await canceltripUpdate(id)
@@ -219,13 +209,10 @@ export const driverCancelTrip = async (request, response, next) => {
                     payment_intent: paymentId.payment_intent_id
                 })
 
-                console.log(result)
-
                 if (result.status != "succeeded") throw new AppError('Error al hacer rembolso', 402);
 
                 const resD = await updateRefundStatusByPaymentId(amount, paymentId.payment_intent_id);
 
-                console.log(resD)
             }
 
             const res = await canceltripUpdate(id)

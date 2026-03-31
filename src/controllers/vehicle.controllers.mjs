@@ -14,8 +14,6 @@ export const registCarInfo = async (request, response, next) => {
             year: request.body.year,
             seats: request.body.seats,
         };
-        
-        console.log(dataCar)
 
         if(!dataCar.insured) throw new AppError('Necesitas aceptar parametro de seguro', 403);
 
@@ -49,7 +47,6 @@ export const uploadVehiclePhoto = async (request, response, next) => {
             url: ''
         }
         const vehicle = await getVehicleByIdAndUser(data.vehicle_id, request.auth.id);
-        //console.log(vehicle)
 
         if(!vehicle.length) throw new AppError("Car not found", 400);
 

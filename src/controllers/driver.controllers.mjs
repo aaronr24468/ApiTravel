@@ -16,9 +16,7 @@ export const getDataForm = async(request, response, next) =>{
 export const getListUserReservations = async(request, response, next) =>{
     try {
         const id = request.params.id;
-        //console.log(id)
         const list = await getListUser(id);
-        //console.log(list)
         response.json({ok:true, message: "Success", list:list})
     } catch (error) {
         next(error)

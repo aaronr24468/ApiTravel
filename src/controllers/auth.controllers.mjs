@@ -15,7 +15,6 @@ export const logOut = (request, response, next) => {
 export const checkAccount = async (request, response, next) => {
     try {
         const token = request.cookies.travelToken;
-        //console.log(data)
         response.json({ok: true, login: true })
     } catch (error) {
         next(error)

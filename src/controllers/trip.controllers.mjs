@@ -191,8 +191,6 @@ export const setProgressTrip = async(request, response, next) =>{
 
         const resultR = await setInProgressReservation(id);
 
-        console.log(resultR)
-
         if(resultR.affectedRows === 0) throw new AppError('Error al actulizar status Reservaciones', 400);
 
         response.json({ ok: true, message: "Viaje en progreso"})
@@ -204,7 +202,6 @@ export const setProgressTrip = async(request, response, next) =>{
 export const getReviewsData = async(request, response, next) =>{
     try {
         const idTrip = request.params.id;
-        console.log(idTrip)
         const reviewsResult = await getReviews(idTrip); 
         response.json({ok: true, message: 'Success', reviews: reviewsResult})
     } catch (error) {

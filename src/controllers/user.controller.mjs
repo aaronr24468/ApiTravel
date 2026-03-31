@@ -49,7 +49,7 @@ export const checkAccount = async (request, response, next) => {
 export const getMyReservations = async(request, response, next) =>{
     try {
         const {id} = request.auth;
-        console.log(id)
+  
         const data = await getMyR(id);
 
         if(!data.length) throw new AppError('No contienes ningun viaje', 403);

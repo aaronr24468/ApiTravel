@@ -87,19 +87,11 @@ export const myEarnings = async(request, response, next) =>{
     try {
         const id = request.auth.id;
 
-        console.log(id)
-
         const user = await getProfileDriverInfo(id);
-
-        console.log("paso la query")
 
         const stripe_account_id = user[0].stripe_account_id;
 
-        console.log(stripe_account_id, process.env.STRIPE_SECRET_KEY)
-
         const result = await stripe.accounts.createLoginLink(stripe_account_id);
-
-        console.log(result)
 
         response.json({ok: true, message: 'Success', url: result.url});
     } catch (error) {

@@ -31,20 +31,17 @@ export const stripeWebHook = async (req, res) => {
     switch (event.type) {
         case "payment_intent.succeeded": {
             const paymentIntent = event.data.object;
-            //console.log(paymentIntent)
 
             /*se reviza que no tengamos el mismo id de pago, si lo tenemos es porque ya se realizo el pago con ese id y ya se guardo en la BD 
             lo que hacemos con esto es que si sale rompre el switch para que no descuente otro asiento erroneamente*/
 
             const exist = await paymentExist(paymentIntent.id);
 
-            console.log("1")
 
             if (exist.length > 0) break;
 
             const priceTrip = await getPriceTripSeats(paymentIntent.metadata.trip_id);
 
-            console.log("2")
 
             const driverAmountFee = priceTrip.price * 0.03;
 
@@ -74,20 +71,8 @@ export const stripeWebHook = async (req, res) => {
                 break;
             }
 
-            // const updatetripData = {
-            //     id: data.trip_id,
-            //     seats: priceTrip.available_seats - data.seats
-            // }
-
-            //console.log(updatetripData)
-
-            //await updateSeatsStatus(updatetripData)
-
-            console.log(data)
-
             await paidSucceededUser(data)
 
-            console.log("5")
 
             break;
         }
@@ -121,7 +106,6 @@ export const stripeWebHook = async (req, res) => {
             const idPayout = paid.id;
 
             const idTrip = paid.metadata.idTrip;
-            console.log(idTrip)
 
             const payout = await findTripByTransferId(idTrip);
 
